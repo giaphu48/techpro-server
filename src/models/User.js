@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema(
             unique: true,
         },
         password: String,
+        favorites: [{
+            type: String
+        }],
     },
     {
         timestamps: true,

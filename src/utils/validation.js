@@ -13,5 +13,5 @@ const isValidPassword = (password) => {
 
 module.exports = {
     isValidEmail,
-    isValidPassword,
+    isValidPassword
 };

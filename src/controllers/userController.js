@@ -11,6 +11,10 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
         }
 
+        if (name.length < 3 || name.length > 50) {
+            return res.status(400).json({ message: "Tên phải có từ 3 đến 50 ký tự" });
+        }
+
         if (!isValidEmail(email)) {
             return res.status(400).json({ message: "Email không hợp lệ" });
         }
