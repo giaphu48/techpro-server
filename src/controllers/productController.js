@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const { addProductToChroma } = require("../configs/chroma");
 
 const createProduct = async (req, res) => {
     try {
@@ -22,6 +23,9 @@ const createProduct = async (req, res) => {
             rating,
             reviews,
         });
+
+        // Sync to ChromaDB
+        await addProductToChroma(product);
 
         res.status(201).json(product);
     } catch (error) {
