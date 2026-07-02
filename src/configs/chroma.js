@@ -26,21 +26,17 @@ const getProductCollection = async () => {
 };
 
 const addProductToChroma = async (product) => {
-    try {
-        const collection = await getProductCollection();
-        const content = `Tên sản phẩm: ${product.name}\nMô tả: ${product.description}\nGiá: ${product.price} VNĐ\nDanh mục: ${product.category}`;
+    const collection = await getProductCollection();
+    const content = `Tên sản phẩm: ${product.name}\nMô tả: ${product.description}\nGiá: ${product.price} VNĐ\nDanh mục: ${product.category}`;
 
-        await collection.upsert({
-            ids: [product.id.toString()],
-            documents: [content],
-            metadatas: [{
-                name: product.name,
-                price: product.price,
-                category: product.category
-            }]
-        });
-    } catch (error) {
-        console.error(`Failed to sync product ${product.id} to ChromaDB:`, error);
-    }
+    await collection.upsert({
+        ids: [product.id.toString()],
+        documents: [content],
+        metadatas: [{
+            name: product.name,
+            price: product.price,
+            category: product.category
+        }]
+    });
 };
 module.exports = { getProductCollection, addProductToChroma };
