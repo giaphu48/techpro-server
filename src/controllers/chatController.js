@@ -13,8 +13,8 @@ Hãy trả lời ngắn gọn, súc tích bằng tiếng Việt.`;
 
 const getChatHistory = async (req, res) => {
     try {
-        const { sessionId } = req.params;
-        const session = await ChatSession.findOne({ sessionId });
+        const userId = req.user._id;
+        const session = await ChatSession.findOne({ userId });
         
         if (!session) {
             return res.status(200).json({ messages: [] });
@@ -29,7 +29,7 @@ const getChatHistory = async (req, res) => {
 
 const sendMessage = async (req, res) => {
     try {
-        const { sessionId } = req.params;
+        const userId = req.user._id;
         const { content } = req.body;
 
         if (!content) {
@@ -37,9 +37,9 @@ const sendMessage = async (req, res) => {
         }
 
         // Tìm hoặc tạo session
-        let session = await ChatSession.findOne({ sessionId });
+        let session = await ChatSession.findOne({ userId });
         if (!session) {
-            session = new ChatSession({ sessionId, messages: [] });
+            session = new ChatSession({ userId, messages: [] });
         }
 
         // Thêm tin nhắn của user vào DB
@@ -76,9 +76,9 @@ const sendMessage = async (req, res) => {
 
 const clearChatHistory = async (req, res) => {
     try {
-        const { sessionId } = req.params;
+        const userId = req.user._id;
         
-        await ChatSession.findOneAndDelete({ sessionId });
+        await ChatSession.findOneAndDelete({ userId });
         
         res.status(200).json({ message: "Đã làm mới cuộc trò chuyện thành công" });
     } catch (error) {

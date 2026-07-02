@@ -18,11 +18,11 @@ const messageSchema = new mongoose.Schema({
 
 const chatSessionSchema = new mongoose.Schema(
     {
-        sessionId: {
-            type: String,
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
             required: true,
-            unique: true,
-            index: true
+            unique: true
         },
         messages: [messageSchema]
     },
