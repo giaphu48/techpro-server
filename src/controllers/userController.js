@@ -39,6 +39,7 @@ const registerUser = async (req, res) => {
                 _id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
+                favorites: newUser.favorites || [],
             },
         });
     } catch (error) {
@@ -81,6 +82,7 @@ const loginUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                favorites: user.favorites || [],
             },
             token,
         });
@@ -110,9 +112,57 @@ const deleteAllUser = async (req, res) => {
     }
 }
 
+const toggleFavorite = async (req, res) => {
+    try {
+        const { productId } = req.body;
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "Người dùng không tồn tại" });
+        }
+
+        const isFavorited = user.favorites.includes(productId);
+
+        if (isFavorited) {
+            user.favorites = user.favorites.filter((id) => id !== productId);
+        } else {
+            user.favorites.push(productId);
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            message: isFavorited ? "Đã xóa khỏi danh sách yêu thích" : "Đã thêm vào danh sách yêu thích",
+            favorites: user.favorites,
+        });
+    } catch (error) {
+        console.error("Error in toggleFavorite:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
+
+const getFavorites = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({ message: "Người dùng không tồn tại" });
+        }
+
+        res.status(200).json({
+            favorites: user.favorites,
+        });
+    } catch (error) {
+        console.error("Error in getFavorites:", error);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getAllUsers,
     deleteAllUser,
+    toggleFavorite,
+    getFavorites,
 };
