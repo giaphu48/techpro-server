@@ -3,8 +3,9 @@ const { addProductToChroma } = require("../configs/chroma");
 
 const syncProductsToChroma = async (req, res) => {
     try {
+        console.log("a")
         const products = await Product.find({});
-        
+
         let successCount = 0;
         let failCount = 0;
 
