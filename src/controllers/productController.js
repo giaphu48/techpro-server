@@ -1,5 +1,4 @@
 const Product = require("../models/Product");
-const { addProductToChroma } = require("../configs/chroma");
 
 const createProduct = async (req, res) => {
     try {

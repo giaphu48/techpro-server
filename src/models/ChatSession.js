@@ -3,34 +3,31 @@ const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema({
     role: {
         type: String,
-        enum: ["user", "assistant"],
-        required: true,
+        enum: ["user", "assistant", "system"],
+        required: true
     },
     content: {
         type: String,
-        required: true,
+        required: true
     },
-    createdAt: {
+    timestamp: {
         type: Date,
-        default: Date.now,
-    },
+        default: Date.now
+    }
 });
 
 const chatSessionSchema = new mongoose.Schema(
     {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-        title: {
+        sessionId: {
             type: String,
-            default: "Cuộc hội thoại mới",
+            required: true,
+            unique: true,
+            index: true
         },
-        messages: [messageSchema],
+        messages: [messageSchema]
     },
     {
-        timestamps: true,
+        timestamps: true
     }
 );
 

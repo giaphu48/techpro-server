@@ -1,18 +1,15 @@
 const express = require("express");
-const { handleChat, getUserSessions, getSessionDetails, deleteSession } = require("../controllers/chatController");
-const { syncProductsToChroma } = require("../controllers/chromaController");
-const { protect } = require("../middlewares/authMiddleware");
+const { getChatHistory, sendMessage, clearChatHistory } = require("../controllers/chatController");
 
 const router = express.Router();
 
-// Apply auth protection to all chat routes (including sessions)
-router.use(protect);
+// Lấy lịch sử chat của một phiên
+router.get("/:sessionId", getChatHistory);
 
-router.post("/", handleChat);
-router.get("/sessions", getUserSessions);
-router.get("/sessions/:sessionId", getSessionDetails);
-router.delete("/sessions/:sessionId", deleteSession);
+// Gửi tin nhắn mới trong một phiên
+router.post("/:sessionId", sendMessage);
 
-router.post("/sync", syncProductsToChroma);
+// Làm mới (xóa) cuộc trò chuyện
+router.delete("/:sessionId", clearChatHistory);
 
 module.exports = router;
