@@ -1,5 +1,6 @@
 const OpenAI = require("openai");
 const ChatSession = require("../models/ChatSession");
+const { searchSimilarProducts } = require("../configs/chroma");
 
 // Cấu hình OpenAI client
 const openai = new OpenAI({
@@ -7,15 +8,16 @@ const openai = new OpenAI({
 });
 
 // Prompt hệ thống
-const SYSTEM_PROMPT = `Bạn là trợ lý ảo AI của cửa hàng tai nghe chính hãng TechPro. 
+const BASE_SYSTEM_PROMPT = `Bạn là trợ lý ảo AI của cửa hàng tai nghe chính hãng TechPro. 
 Hãy tư vấn nhiệt tình, thân thiện và chuyên nghiệp về các sản phẩm tai nghe SONY.
-Hãy trả lời ngắn gọn, súc tích bằng tiếng Việt.`;
+Hãy trả lời ngắn gọn, súc tích bằng tiếng Việt.
+Dưới đây là danh sách toàn bộ các sản phẩm hiện có tại cửa hàng. Vui lòng CHỈ tư vấn dựa trên danh sách sản phẩm này. Nếu khách hỏi sản phẩm không có trong danh sách, hãy nói cửa hàng chưa kinh doanh sản phẩm đó.`;
 
 const getChatHistory = async (req, res) => {
     try {
         const userId = req.user._id;
         const session = await ChatSession.findOne({ userId });
-        
+
         if (!session) {
             return res.status(200).json({ messages: [] });
         }
@@ -47,9 +49,27 @@ const sendMessage = async (req, res) => {
         session.messages.push(userMessage);
         await session.save();
 
+        // Tối đa 3 tin nhắn cuối cùng của user để tạo context search (nếu cần) hoặc chỉ dùng content cuối cùng
+        const queryText = content;
+
+        // Fetch similar products from VectorDB for context
+        const products = await searchSimilarProducts(queryText, 3);
+
+        // Format product data to string
+        const productContextStr = products.map((p, index) =>
+            `\n--- Sản phẩm ${index + 1} ---
+- Tên: ${p.name}
+- Giá: ${p.price.toLocaleString('vi-VN')} VND
+- Danh mục: ${p.category}
+- Đặc điểm: ${p.description}`
+        ).join("\n");
+
+        // Construct the dynamic system prompt
+        const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\n[DANH SÁCH SẢN PHẨM]:\n${productContextStr}`;
+
         // Chuẩn bị lịch sử tin nhắn cho OpenAI
         const messagesForOpenAI = [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: dynamicSystemPrompt },
             ...session.messages.map(msg => ({ role: msg.role, content: msg.content }))
         ];
 
@@ -77,9 +97,9 @@ const sendMessage = async (req, res) => {
 const clearChatHistory = async (req, res) => {
     try {
         const userId = req.user._id;
-        
+
         await ChatSession.findOneAndDelete({ userId });
-        
+
         res.status(200).json({ message: "Đã làm mới cuộc trò chuyện thành công" });
     } catch (error) {
         console.error("Lỗi xóa lịch sử chat:", error);

@@ -1,11 +1,18 @@
 services:
-  backend:
-    build: .
+  chromadb:
+    image: chromadb/chroma
     ports:
-      - "8080:8080"
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
     environment:
-      - PORT=8080
-      - MONGODB_URI=${MONGODB_URI}
-      - CORS_URL=${CORS_URL}
-      - JWT_SECRET=${JWT_SECRET}
-    restart: unless-stopped
+      - ANONYMIZED_TELEMETRY=false
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/8000' 2>/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  chroma_data:
